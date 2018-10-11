@@ -1,0 +1,50 @@
+{
+ "BaseModel": {
+  "class": "base_models.base_mlp.BaseMLP"
+ },
+ "Decoder": {
+  "class": "coders.mlp_coder.MLPDecoder"
+ },
+ "DecoderOptimizer": {
+  "args": {
+   "lr": 0.001,
+   "weight_decay": 1e-05
+  },
+  "class": "torch.optim.Adam"
+ },
+ "Encoder": {
+  "class": "coders.mlp_coder.MLPEncoder"
+ },
+ "EncoderOptimizer": {
+  "args": {
+   "lr": 0.001,
+   "weight_decay": 1e-05
+  },
+  "class": "torch.optim.Adam"
+ },
+ "Loss": {
+  "class": "torch.nn.MSELoss"
+ },
+ "TrainDataset": {
+  "args": {
+   "is_train": true
+  },
+  "class": "datasets.code_dataset.FashionMNISTCodeDataset"
+ },
+ "ValidationDataset": {
+  "args": {
+   "is_train": false
+  },
+  "class": "datasets.code_dataset.FashionMNISTCodeDataset"
+ },
+ "base_model_file": "base_model_trained_files/fashion-mnist/base-mlp/model.t7",
+ "base_model_input_size": [
+  -1,
+  784
+ ],
+ "batch_size": 64,
+ "ec_k": 2,
+ "ec_r": 1,
+ "final_epoch": 500,
+ "save_dir": "save/fashion-mnist/base-mlp/k2/mse-base/mlp"
+}

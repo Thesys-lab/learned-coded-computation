@@ -1,0 +1,5 @@
+*.npy
+*.swo
+*.swp
+*__pycache__*
+data

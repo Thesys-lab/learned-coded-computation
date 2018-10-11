@@ -1,0 +1,50 @@
+{
+ "BaseModel": {
+  "class": "base_models.logistic.Logistic"
+ },
+ "Decoder": {
+  "class": "coders.mlp_coder.MLPDecoder"
+ },
+ "DecoderOptimizer": {
+  "args": {
+   "lr": 0.001,
+   "weight_decay": 1e-05
+  },
+  "class": "torch.optim.Adam"
+ },
+ "Encoder": {
+  "class": "coders.mlp_coder.MLPEncoder"
+ },
+ "EncoderOptimizer": {
+  "args": {
+   "lr": 0.001,
+   "weight_decay": 1e-05
+  },
+  "class": "torch.optim.Adam"
+ },
+ "Loss": {
+  "class": "loss.kldiv.KLDivLoss"
+ },
+ "TrainDataset": {
+  "args": {
+   "is_train": true
+  },
+  "class": "datasets.code_dataset.MNISTCodeDataset"
+ },
+ "ValidationDataset": {
+  "args": {
+   "is_train": false
+  },
+  "class": "datasets.code_dataset.MNISTCodeDataset"
+ },
+ "base_model_file": "base_model_trained_files/mnist/logistic/model.t7",
+ "base_model_input_size": [
+  -1,
+  784
+ ],
+ "batch_size": 32,
+ "ec_k": 5,
+ "ec_r": 1,
+ "final_epoch": 500,
+ "save_dir": "save/mnist/logistic/k5/kl-base/mlp"
+}

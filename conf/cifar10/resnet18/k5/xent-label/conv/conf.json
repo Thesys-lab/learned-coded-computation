@@ -1,0 +1,58 @@
+{
+ "BaseModel": {
+  "args": {
+   "size_for_cifar": true
+  },
+  "class": "base_models.resnet.ResNet18"
+ },
+ "Decoder": {
+  "class": "coders.mlp_coder.MLPDecoder"
+ },
+ "DecoderOptimizer": {
+  "args": {
+   "lr": 0.001,
+   "weight_decay": 1e-05
+  },
+  "class": "torch.optim.Adam"
+ },
+ "Encoder": {
+  "args": {
+   "intermediate_channels": 20
+  },
+  "class": "coders.conv_encoder.ConvEncoder"
+ },
+ "EncoderOptimizer": {
+  "args": {
+   "lr": 0.001,
+   "weight_decay": 1e-05
+  },
+  "class": "torch.optim.Adam"
+ },
+ "Loss": {
+  "class": "torch.nn.CrossEntropyLoss"
+ },
+ "TrainDataset": {
+  "args": {
+   "is_train": true
+  },
+  "class": "datasets.code_dataset.CIFAR10CodeDataset"
+ },
+ "ValidationDataset": {
+  "args": {
+   "is_train": false
+  },
+  "class": "datasets.code_dataset.CIFAR10CodeDataset"
+ },
+ "base_model_file": "base_model_trained_files/cifar10/resnet18/model.t7",
+ "base_model_input_size": [
+  -1,
+  3,
+  32,
+  32
+ ],
+ "batch_size": 32,
+ "ec_k": 5,
+ "ec_r": 1,
+ "final_epoch": 2000,
+ "save_dir": "save/cifar10/resnet18/k5/xent-label/conv"
+}
