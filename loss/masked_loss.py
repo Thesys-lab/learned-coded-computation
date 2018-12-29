@@ -10,7 +10,7 @@ class MaskedLoss(nn.Module):
 
     def __init__(self, base_loss):
         super().__init__()
-        self.base_loss = util.util.construct(base_loss, {"reduce": False})
+        self.base_loss = util.util.construct(base_loss, {"reduction": "none"})
 
     def forward(self, preds, targets, mask):
         """

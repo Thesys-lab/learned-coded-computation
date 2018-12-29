@@ -2,6 +2,9 @@
  "BaseModel": {
   "class": "base_models.logistic.Logistic"
  },
+ "Dataset": {
+  "class": "datasets.code_dataset.MNISTCodeDataset"
+ },
  "Decoder": {
   "class": "coders.mlp_coder.MLPDecoder"
  },
@@ -27,18 +30,6 @@
  },
  "Loss": {
   "class": "loss.kldiv.KLDivLoss"
- },
- "TrainDataset": {
-  "args": {
-   "is_train": true
-  },
-  "class": "datasets.code_dataset.MNISTCodeDataset"
- },
- "ValidationDataset": {
-  "args": {
-   "is_train": false
-  },
-  "class": "datasets.code_dataset.MNISTCodeDataset"
  },
  "base_model_file": "base_model_trained_files/mnist/logistic/model.t7",
  "base_model_input_size": [

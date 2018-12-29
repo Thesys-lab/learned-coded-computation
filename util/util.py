@@ -53,12 +53,12 @@ def init_weights(mod):
             if m.bias is not None:
                 m.bias.data.zero_()
         elif isinstance(m, nn.Conv2d):
-            torch.nn.init.xavier_uniform(
+            torch.nn.init.xavier_uniform_(
                 m.weight, gain=torch.nn.init.calculate_gain('relu'))
             if m.bias is not None:
                 m.bias.data.zero_()
         elif isinstance(m, nn.Conv1d):
-            torch.nn.init.xavier_uniform(
+            torch.nn.init.xavier_uniform_(
                 m.weight, gain=torch.nn.init.calculate_gain('relu'))
             if m.bias is not None:
                 m.bias.data.zero_()
@@ -85,16 +85,6 @@ def save_checkpoint(state_dict, save_dir, filename, is_best):
     torch.save(state_dict, save_file)
     if is_best:
         copyfile(save_file, os.path.join(save_dir, 'best.pth'))
-
-
-def to_variable(tensor):
-    """
-    Converts PyTorch tensor ``tensor`` to a ``torch.autograd.Variable``,
-    placing the data on GPU if available.
-    """
-    if torch.cuda.is_available():
-        tensor = tensor.cuda()
-    return torch.autograd.Variable(tensor)
 
 
 def try_cuda(x):

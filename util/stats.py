@@ -56,9 +56,9 @@ class StatsTracker(object):
         max_outputs = torch.max(base_model_outputs, dim=2)[1]
 
         self.num_reconstruction_match += torch.sum(
-            (max_decoded == max_outputs) * mask).data[0]
+            (max_decoded == max_outputs) * mask).item()
         self.num_overall_match += torch.sum(
-            (max_decoded == true_labels) * mask).data[0]
+            (max_decoded == true_labels) * mask).item()
 
     def update_loss(self, loss):
         """

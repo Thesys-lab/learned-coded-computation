@@ -78,23 +78,12 @@ Same format as "Decoder Optimizer" above.
 
 ### Datasets
 ```json
-"TrainDataset": {
-  "args": {
-    "is_train": true
-  },
-  "class": "datasets.code_dataset.MNISTCodeDataset"
-},
-
-"ValidationDataset": {
-  "args": {
-    "is_train": false
-  },
+"Dataset": {
   "class": "datasets.code_dataset.MNISTCodeDataset"
 }
 ```
 * `class`: Path to dataset class. Currently, only those implemented in the [datasets](../datasets)
   directory will work.
-* `is_train`: Whether this dataset is used for training samples or not.
 
 ### Base model details
 ```json

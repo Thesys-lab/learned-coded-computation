@@ -7,7 +7,8 @@ from base_models.base_model_wrapper import BaseModelWrapper
 from loss.masked_loss import MaskedLoss
 import util.stats
 import util.util
-from util.util import construct, to_variable, try_cuda
+from util.util import construct, try_cuda
+from datasets.code_dataset import get_dataloaders
 
 
 class CodeTrainer(object):
@@ -34,10 +35,16 @@ class CodeTrainer(object):
         self.base_model.eval()
         while self.cur_epoch < self.final_epoch:
             # Perform epoch on training set
-            self.__epoch(is_train=True)
+            self.__epoch(self.train_dataloader, do_step=True)
 
             # Perform epoch on validation set
-            _, val_recon_acc, _ = self.__epoch(is_train=False)
+            _, val_recon_acc, _ = self.__epoch(self.val_dataloader,
+                                               do_step=False)
+
+            # Perform epoch on test dataset
+            _, _, _ = self.__epoch(self.test_dataloader,
+                                   do_step=False,
+                                   do_print=False)
 
             self.__save_current_state(val_recon_acc)
             self.cur_epoch += 1
@@ -48,54 +55,51 @@ class CodeTrainer(object):
             self.base_model = try_cuda(self.base_model)
             self.loss_fn = try_cuda(self.loss_fn)
 
-    def __epoch(self, is_train):
+    def __epoch(self, data_loader, do_step=False, do_print=True):
         """
         Performs a single epoch of either training or validation.
 
         Parameters
         ----------
-        is_train: bool
-            Whether this epoch is for training or not. If the epoch is for
-            training, then loss will be backpropogated and parameters updated.
+        data_loader:
+            The data loader to use for this epoch
+        do_step: bool
+            Whether to make optimization steps using this data loader.
+        do_print: bool
+            Whether to print accuracies for this epoch.
         """
         stats = util.stats.StatsTracker()
+        label = data_loader.dataset.name
 
-        if is_train:
-            label = "TRAIN"
-            data_loader = self.train_dataloader
-        else:
-            label = "VAL"
-            data_loader = self.val_dataloader
-
-        print("--------------- EPOCH {} : {} ---------------".format(self.cur_epoch, label))
+        if do_print:
+            print(
+                "--------------- EPOCH {} : {} ---------------".format(self.cur_epoch, label))
 
         for mb_data, mb_labels, mb_true_labels in data_loader:
-            mb_data = to_variable(mb_data.view(-1, self.ec_k, mb_data.size(1)))
-            mb_labels = to_variable(
+            mb_data = try_cuda(mb_data.view(-1, self.ec_k, mb_data.size(1)))
+            mb_labels = try_cuda(
                 mb_labels.view(-1, self.ec_k, mb_labels.size(1)))
-            mb_true_labels = to_variable(mb_true_labels.view(-1, self.ec_k))
+            mb_true_labels = try_cuda(mb_true_labels.view(-1, self.ec_k))
 
-            if is_train:
+            if do_step:
                 self.enc_opt.zero_grad()
                 self.dec_opt.zero_grad()
 
             loss = self.__forward(mb_data, mb_labels, mb_true_labels, stats)
 
-            if is_train:
+            if do_step:
                 loss.backward()
                 self.enc_opt.step()
                 self.dec_opt.step()
 
         epoch_loss, epoch_recon_acc, epoch_overall_acc = stats.averages()
 
-        print("loss:", epoch_loss)
-        print("reconstruction-acc:", epoch_recon_acc)
-        print("overall-acc:", epoch_overall_acc)
+        if do_print:
+            print("loss:", epoch_loss)
+            print("reconstruction-acc:", epoch_recon_acc)
+            print("overall-acc:", epoch_overall_acc)
 
-        if is_train:
-            outfile_fmt = os.path.join(self.save_dir, "train_{}.txt")
-        else:
-            outfile_fmt = os.path.join(self.save_dir, "val_{}.txt")
+        outfile_fmt = os.path.join(self.save_dir, label + "_{}.txt")
         vals = [epoch_loss, epoch_recon_acc, epoch_overall_acc]
         names = ["loss", "reconstruction_accuracy", "overall_accuracy"]
         util.util.write_vals(outfile_fmt, vals, names)
@@ -141,7 +145,7 @@ class CodeTrainer(object):
             erase_mask[i, erased_idx, :] = 0.
             acc_mask[i, erased_idx] = 1
 
-        return to_variable(erase_mask), to_variable(acc_mask)
+        return try_cuda(erase_mask), try_cuda(acc_mask)
 
     def __forward(self, mb_data, mb_labels, mb_true_labels, stats):
         """
@@ -215,7 +219,7 @@ class CodeTrainer(object):
         loss = self.loss_fn(predictions, targets, mb_amask.view(-1).float())
 
         # Update our stats
-        stats.update_loss(loss.data[0])
+        stats.update_loss(loss.item())
         stats.update_accuracies(decoded, labels, true_labels, mb_amask)
         return loss
 
@@ -269,23 +273,12 @@ class CodeTrainer(object):
         self.base_model = try_cuda(self.base_model)
         self.base_model.eval()
 
-        train_dataset = construct(config_map["TrainDataset"],
-                                  {"base_model": self.base_model,
-                                   "ec_k": self.ec_k})
-
-        # Each sample for the encoder/decoder consists of `ec_k` images from
-        # the underlying dataset. Thus, the batch size for drawing samples from
-        # the underlying dataset is `batch_size * ec_k`
-        batch_size_for_loading = self.batch_size * self.ec_k
-        self.train_dataloader = data.DataLoader(
-            train_dataset, batch_size=batch_size_for_loading, shuffle=True)
-
-        val_dataset = construct(config_map["ValidationDataset"],
-                                {"base_model": self.base_model,
-                                 "ec_k": self.ec_k})
-        self.val_dataloader = data.DataLoader(
-            val_dataset, batch_size=batch_size_for_loading,
-            shuffle=False, num_workers=0)
+        trdl, vdl, tsdl = get_dataloaders(config_map["Dataset"],
+                                          self.base_model, self.ec_k,
+                                          self.batch_size)
+        self.train_dataloader = trdl
+        self.val_dataloader = vdl
+        self.test_dataloader = tsdl
 
         # Loss functions are wrapped by a thin class that masks loss prior to
         # summing it for performing a backward pass. Using masks enables us to
@@ -294,16 +287,18 @@ class CodeTrainer(object):
         # for-loops. We find this to be faster.
         self.loss_fn = MaskedLoss(base_loss=config_map["Loss"])
 
+        encoder_in_dim = self.val_dataloader.dataset.encoder_in_dim()
+        decoder_in_dim = self.val_dataloader.dataset.decoder_in_dim()
         self.enc_model = construct(config_map["Encoder"],
                                    {"ec_k": self.ec_k,
                                     "ec_r": self.ec_r,
-                                    "in_dim": val_dataset.encoder_in_dim()})
+                                    "in_dim": encoder_in_dim})
         util.util.init_weights(self.enc_model)
 
         self.dec_model = construct(config_map["Decoder"],
                                    {"ec_k": self.ec_k,
                                     "ec_r": self.ec_r,
-                                    "in_dim": val_dataset.decoder_in_dim()})
+                                    "in_dim": decoder_in_dim})
         util.util.init_weights(self.dec_model)
 
         # Move our encoder, decoder, and loss functions to GPU, if available

@@ -7,7 +7,7 @@ Coded-Computation"](https://arxiv.org/abs/1806.01259).
 This repository was developed using the following versions of software and has
 not been tested using other versions.
 * Python 3.6.5
-* PyTorch version 0.3.0 with torchvision (will likely work with higher versions, but they have not been tested)
+* PyTorch version 1.0.0 with torchvision
 
 ### Repository structure
 * [base_models](base_models): Implementations of the Base-MLP and ResNet-18 base models used

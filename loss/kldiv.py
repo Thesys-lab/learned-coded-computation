@@ -2,8 +2,8 @@ import torch
 
 
 class KLDivLoss(torch.nn.KLDivLoss):
-    def __init__(self, size_average=True, reduce=False):
-        super().__init__(size_average, reduce)
+    def __init__(self, reduction="none"):
+        super().__init__(reduction=reduction)
 
     def forward(self, preds, targets):
         """

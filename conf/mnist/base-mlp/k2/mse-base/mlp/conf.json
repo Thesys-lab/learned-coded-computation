@@ -2,6 +2,9 @@
  "BaseModel": {
   "class": "base_models.base_mlp.BaseMLP"
  },
+ "Dataset": {
+  "class": "datasets.code_dataset.MNISTCodeDataset"
+ },
  "Decoder": {
   "class": "coders.mlp_coder.MLPDecoder"
  },
@@ -24,18 +27,6 @@
  },
  "Loss": {
   "class": "torch.nn.MSELoss"
- },
- "TrainDataset": {
-  "args": {
-   "is_train": true
-  },
-  "class": "datasets.code_dataset.MNISTCodeDataset"
- },
- "ValidationDataset": {
-  "args": {
-   "is_train": false
-  },
-  "class": "datasets.code_dataset.MNISTCodeDataset"
  },
  "base_model_file": "base_model_trained_files/mnist/base-mlp/model.t7",
  "base_model_input_size": [
