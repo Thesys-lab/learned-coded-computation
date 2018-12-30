@@ -253,11 +253,11 @@ def get_dataloaders(dataset_path, base_model, ec_k, batch_size):
     # the underlying dataset. Thus, the batch size for drawing samples from
     # the underlying dataset is `batch_size * ec_k`
     batch_size_for_loading = ec_k * batch_size
-    train_loader = data.DataLoader(train_dataset,
-                                   batch_size=batch_size_for_loading, shuffle=True)
+    train_loader = data.DataLoader(train_dataset, sampler=train_sampler,
+                                   batch_size=batch_size_for_loading)
 
-    val_loader = data.DataLoader(val_dataset,
-                                 batch_size=batch_size_for_loading, shuffle=False)
+    val_loader = data.DataLoader(val_dataset, sampler=val_sampler,
+                                 batch_size=batch_size_for_loading)
 
     test_dataset = construct(dataset_path,
                              {"name": "test",
