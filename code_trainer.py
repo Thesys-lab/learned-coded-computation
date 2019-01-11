@@ -71,6 +71,13 @@ class CodeTrainer(object):
         stats = util.stats.StatsTracker()
         label = data_loader.dataset.name
 
+        if label == "train":
+            self.enc_model.train()
+            self.dec_model.train()
+        else:
+            self.enc_model.eval()
+            self.dec_model.eval()
+
         if do_print:
             print(
                 "--------------- EPOCH {} : {} ---------------".format(self.cur_epoch, label))
