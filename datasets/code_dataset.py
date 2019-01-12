@@ -244,6 +244,12 @@ def get_dataloaders(dataset_path, base_model, ec_k, batch_size):
     shuffle(indices)
 
     num_val = 5000
+
+    # Make sure that num_val is a multiple of ec_k.
+    remainder = num_val % ec_k
+    if remainder != 0:
+        num_val += (ec_k - remainder)
+
     train_indices = indices[num_val:]
     val_indices = indices[:num_val]
     train_sampler = data.sampler.SubsetRandomSampler(train_indices)
