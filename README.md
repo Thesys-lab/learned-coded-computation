@@ -1,4 +1,9 @@
-# learned-cc
+**NOTE**: The implementation of learned encoders and decoders has been
+moved to our framework for general learning-based coded computation [here.](https://github.com/Thesys-lab/parity-models)
+Future updates to learned encoders and decoders will be provided in that repository,
+rather than in this repository.
+
+# Learning Encoders and Decoders for Coded Computation
 This repository contains the code associated with the paper
 ["Learning a Code: Machine Learning for Approximate Non-Linear
 Coded-Computation"](https://arxiv.org/abs/1806.01259).
